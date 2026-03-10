@@ -24,3 +24,23 @@ export {
   type HedgeReconciliationDecision,
   type HedgeReconciliationInput,
 } from "./strategy/reconciler.js";
+export {
+  estimateCarryEdge,
+  type CarryCostInput,
+  type CarryEdgeEstimate,
+} from "./strategy/cost-model.js";
+export {
+  evaluateCarryDecision,
+  type CarryAction,
+  type CarryDecision,
+  type CarryDecisionInput,
+  type CarryReasonCode,
+  type FundingRegimeMetrics,
+} from "./strategy/decision-engine.js";
+export {
+  evaluateLeggingGuard,
+  type LeggingAction,
+  type LeggingGuardDecision,
+  type LeggingGuardInput,
+  type LeggingIncidentType,
+} from "./strategy/legging-guard.js";

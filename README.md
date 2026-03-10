@@ -27,6 +27,25 @@ Production-grade carry bot scaffold for Starknet, built test-first.
   - base URLs, API prefix, WS endpoints, client id, rate/heartbeat defaults
 - Additional tests for Extended client behavior and reconciler logic
 
+## PR3 Delivered (merged into same PR branch)
+
+- Deterministic carry decision engine:
+  - stale-data pause
+  - venue-health pause
+  - enter/hold/exit with explicit reason codes
+- Cost model with full edge breakdown:
+  - funding income
+  - fees
+  - slippage
+  - drift reserve
+  - gas
+- Legging guard state logic:
+  - timeout recovery
+  - failed second-leg recovery
+  - partial-fill emergency exit
+  - incident taxonomy (`legging_timeout`, `partial_fill_unhedged`, `venue_error`, etc.)
+- Additional TDD suite for strategy safety-critical flows
+
 ## Stack
 
 - Node.js 22+
