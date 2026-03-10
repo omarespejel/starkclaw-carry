@@ -11,6 +11,22 @@ Production-grade carry bot scaffold for Starknet, built test-first.
 - Append-only NDJSON journal with schema validation and runId safety checks
 - TDD baseline with coverage (`vitest`)
 
+## PR2 Delivered (merged into same PR branch)
+
+- Extended venue client (read-only) with robust request logging:
+  - market snapshot (`/info/markets`)
+  - funding history (`/info/{market}/funding`)
+  - effective fee tier (`/user/fees`)
+- Normalized typed outputs for market/funding/fees
+- Deterministic hedge reconciler skeleton with explicit actions:
+  - `HOLD`
+  - `REBALANCE_INCREASE_PERP_SHORT`
+  - `REBALANCE_DECREASE_PERP_SHORT`
+  - `EXIT_ALL`
+- Expanded env model for Extended runtime fields:
+  - base URLs, API prefix, WS endpoints, client id, rate/heartbeat defaults
+- Additional tests for Extended client behavior and reconciler logic
+
 ## Stack
 
 - Node.js 22+

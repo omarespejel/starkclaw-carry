@@ -11,3 +11,16 @@ export {
   type CreateFileJournalOptions,
   type FileJournal,
 } from "./journal/file-journal.js";
+export { createExtendedClient, type ExtendedClient } from "./venues/extended/client.js";
+export type {
+  ExtendedFundingPoint,
+  ExtendedMarketSnapshot,
+  ExtendedTradingConfig,
+  ExtendedUserFees,
+} from "./venues/extended/types.js";
+export {
+  evaluateHedgeReconciliation,
+  type HedgeReconciliationAction,
+  type HedgeReconciliationDecision,
+  type HedgeReconciliationInput,
+} from "./strategy/reconciler.js";

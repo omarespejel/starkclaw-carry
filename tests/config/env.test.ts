@@ -20,6 +20,11 @@ describe("parseEnv", () => {
     expect(config.loopIntervalMs).toBe(5_000);
     expect(config.maxNotionalUsd).toBe(1_000);
     expect(config.bridgeEnabled).toBe(false);
+    expect(config.extendedBaseUrl).toBe("https://api.starknet.extended.exchange");
+    expect(config.extendedApiPrefix).toBe("/api/v1");
+    expect(config.extendedDefaultRateLimitRpm).toBe(1000);
+    expect(config.extendedPingIntervalSeconds).toBe(15);
+    expect(config.extendedPongTimeoutSeconds).toBe(10);
     expect(config.journalDir).toContain("artifacts/journal");
   });
 

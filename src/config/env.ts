@@ -26,6 +26,23 @@ const envSchema = z.object({
     .optional()
     .transform((value) => (value === undefined ? undefined : Number(value)))
     .pipe(z.number().int().nonnegative().optional()),
+  EXTENDED_CLIENT_ID: z
+    .string()
+    .optional()
+    .transform((value) => (value === undefined ? undefined : Number(value)))
+    .pipe(z.number().int().nonnegative().optional()),
+  EXTENDED_BASE_URL: z.url().default("https://api.starknet.extended.exchange"),
+  EXTENDED_API_PREFIX: z.string().default("/api/v1"),
+  EXTENDED_ACCOUNT_WS_URL: z
+    .url()
+    .default("wss://api.starknet.extended.exchange/stream.extended.exchange/v1/account"),
+  EXTENDED_FUNDING_WS_TEMPLATE: z
+    .string()
+    .default("wss://api.starknet.extended.exchange/stream.extended.exchange/v1/funding/{market}"),
+  EXTENDED_TESTNET_BASE_URL: z.url().default("https://api.starknet.sepolia.extended.exchange"),
+  EXTENDED_DEFAULT_RATE_LIMIT_RPM: z.coerce.number().int().positive().default(1000),
+  EXTENDED_PING_INTERVAL_SECONDS: z.coerce.number().int().positive().default(15),
+  EXTENDED_PONG_TIMEOUT_SECONDS: z.coerce.number().int().positive().default(10),
   MARKET: z.string().regex(MARKET_REGEX).default("ETH-USD"),
   MAX_NOTIONAL_USD: z.coerce.number().positive().default(1_000),
   LOOP_INTERVAL_MS: z.coerce.number().int().min(1_000).default(5_000),
@@ -53,6 +70,15 @@ export type AppConfig = {
   extendedPublicKey?: string;
   extendedPrivateKey?: string;
   extendedVaultNumber?: number;
+  extendedClientId?: number;
+  extendedBaseUrl: string;
+  extendedApiPrefix: string;
+  extendedAccountWsUrl: string;
+  extendedFundingWsTemplate: string;
+  extendedTestnetBaseUrl: string;
+  extendedDefaultRateLimitRpm: number;
+  extendedPingIntervalSeconds: number;
+  extendedPongTimeoutSeconds: number;
   market: string;
   maxNotionalUsd: number;
   loopIntervalMs: number;
@@ -81,6 +107,15 @@ function pickEnvValues(env: Record<string, string | undefined>) {
     EXTENDED_PUBLIC_KEY: env.EXTENDED_PUBLIC_KEY,
     EXTENDED_PRIVATE_KEY: env.EXTENDED_PRIVATE_KEY,
     EXTENDED_VAULT_NUMBER: env.EXTENDED_VAULT_NUMBER,
+    EXTENDED_CLIENT_ID: env.EXTENDED_CLIENT_ID,
+    EXTENDED_BASE_URL: env.EXTENDED_BASE_URL,
+    EXTENDED_API_PREFIX: env.EXTENDED_API_PREFIX,
+    EXTENDED_ACCOUNT_WS_URL: env.EXTENDED_ACCOUNT_WS_URL,
+    EXTENDED_FUNDING_WS_TEMPLATE: env.EXTENDED_FUNDING_WS_TEMPLATE,
+    EXTENDED_TESTNET_BASE_URL: env.EXTENDED_TESTNET_BASE_URL,
+    EXTENDED_DEFAULT_RATE_LIMIT_RPM: env.EXTENDED_DEFAULT_RATE_LIMIT_RPM,
+    EXTENDED_PING_INTERVAL_SECONDS: env.EXTENDED_PING_INTERVAL_SECONDS,
+    EXTENDED_PONG_TIMEOUT_SECONDS: env.EXTENDED_PONG_TIMEOUT_SECONDS,
     MARKET: env.MARKET,
     MAX_NOTIONAL_USD: env.MAX_NOTIONAL_USD,
     LOOP_INTERVAL_MS: env.LOOP_INTERVAL_MS,
@@ -105,6 +140,15 @@ function mapSchemaToConfig(parsed: z.infer<typeof envSchema>): AppConfig {
     extendedPublicKey: parsed.EXTENDED_PUBLIC_KEY,
     extendedPrivateKey: parsed.EXTENDED_PRIVATE_KEY,
     extendedVaultNumber: parsed.EXTENDED_VAULT_NUMBER,
+    extendedClientId: parsed.EXTENDED_CLIENT_ID,
+    extendedBaseUrl: parsed.EXTENDED_BASE_URL,
+    extendedApiPrefix: parsed.EXTENDED_API_PREFIX,
+    extendedAccountWsUrl: parsed.EXTENDED_ACCOUNT_WS_URL,
+    extendedFundingWsTemplate: parsed.EXTENDED_FUNDING_WS_TEMPLATE,
+    extendedTestnetBaseUrl: parsed.EXTENDED_TESTNET_BASE_URL,
+    extendedDefaultRateLimitRpm: parsed.EXTENDED_DEFAULT_RATE_LIMIT_RPM,
+    extendedPingIntervalSeconds: parsed.EXTENDED_PING_INTERVAL_SECONDS,
+    extendedPongTimeoutSeconds: parsed.EXTENDED_PONG_TIMEOUT_SECONDS,
     market: parsed.MARKET,
     maxNotionalUsd: parsed.MAX_NOTIONAL_USD,
     loopIntervalMs: parsed.LOOP_INTERVAL_MS,
@@ -166,6 +210,9 @@ export function parseEnv(
       nodeEnv: config.nodeEnv,
       runMode: config.runMode,
       market: config.market,
+      extendedBaseUrl: config.extendedBaseUrl,
+      extendedApiPrefix: config.extendedApiPrefix,
+      extendedDefaultRateLimitRpm: config.extendedDefaultRateLimitRpm,
       loopIntervalMs: config.loopIntervalMs,
       maxNotionalUsd: config.maxNotionalUsd,
       bridgeEnabled: config.bridgeEnabled,
