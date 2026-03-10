@@ -15,7 +15,8 @@ type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 const numericLikeSchema = z.union([z.string(), z.number()]);
 
 const marketRecordSchema = z.object({
-  market: z.string(),
+  market: z.string().optional(),
+  name: z.string().optional(),
   marketStats: z.object({
     markPrice: numericLikeSchema,
     indexPrice: numericLikeSchema,
@@ -38,12 +39,9 @@ const marketRecordSchema = z.object({
   }),
 });
 
-const marketResponseSchema = z.object({
-  markets: z.array(marketRecordSchema),
-});
-
 const userFeesSchema = z.object({
-  market: z.string(),
+  market: z.string().optional(),
+  name: z.string().optional(),
   makerFeeRate: numericLikeSchema,
   takerFeeRate: numericLikeSchema,
   builderFeeRate: numericLikeSchema.optional(),
@@ -123,13 +121,13 @@ function buildUrl(baseUrl: string, apiPrefix: string, path: string): string {
   return `${normalizedBase}${normalizedPrefix}${normalizedPath}`;
 }
 
-function extractFundingRows(payload: unknown): unknown[] {
+function extractArrayRows(payload: unknown): unknown[] {
   if (Array.isArray(payload)) {
     return payload;
   }
   if (payload !== null && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
-    const candidateKeys = ["funding", "fundingRates", "data", "items"];
+    const candidateKeys = ["markets", "funding", "fundingRates", "data", "items", "result"];
     for (const key of candidateKeys) {
       if (Array.isArray(asRecord[key])) {
         return asRecord[key] as unknown[];
@@ -145,8 +143,8 @@ function mapFundingRow(row: unknown): ExtendedFundingPoint | null {
   }
   const asRecord = row as Record<string, unknown>;
 
-  const timestampCandidate = asRecord.timestamp ?? asRecord.time ?? asRecord.ts;
-  const rateCandidate = asRecord.fundingRate ?? asRecord.rate ?? asRecord.value;
+  const timestampCandidate = asRecord.timestamp ?? asRecord.time ?? asRecord.ts ?? asRecord.T;
+  const rateCandidate = asRecord.fundingRate ?? asRecord.rate ?? asRecord.value ?? asRecord.f;
 
   const timestamp = toNumber(timestampCandidate as string | number | undefined);
   const fundingRate = toNumber(rateCandidate as string | number | undefined);
@@ -158,6 +156,42 @@ function mapFundingRow(row: unknown): ExtendedFundingPoint | null {
     timestamp,
     fundingRate,
   };
+}
+
+function extractMarketRows(payload: unknown): z.infer<typeof marketRecordSchema>[] {
+  const rows = extractArrayRows(payload);
+  if (rows.length === 0) {
+    return [];
+  }
+  return rows.map((row) => marketRecordSchema.parse(row));
+}
+
+function resolveMarketName(row: z.infer<typeof marketRecordSchema>): string {
+  const market = row.market ?? row.name;
+  if (market === undefined || market.length === 0) {
+    throw new Error("Extended market payload missing market name.");
+  }
+  return market;
+}
+
+function extractUserFeesRecord(payload: unknown): z.infer<typeof userFeesSchema> {
+  if (payload !== null && typeof payload === "object") {
+    const asRecord = payload as Record<string, unknown>;
+    const candidate = asRecord.data ?? asRecord.result ?? asRecord.items;
+    if (Array.isArray(candidate) && candidate.length > 0) {
+      return userFeesSchema.parse(candidate[0]);
+    }
+  }
+
+  return userFeesSchema.parse(payload);
+}
+
+function resolveFeesMarketName(fees: z.infer<typeof userFeesSchema>): string {
+  const market = fees.market ?? fees.name;
+  if (market === undefined || market.length === 0) {
+    throw new Error("Extended user fee payload missing market name.");
+  }
+  return market;
 }
 
 export function createExtendedClient(options: CreateExtendedClientOptions): ExtendedClient {
@@ -205,15 +239,14 @@ export function createExtendedClient(options: CreateExtendedClientOptions): Exte
       const payload = await requestJson(
         `/info/markets?market=${encodeURIComponent(params.market)}`,
       );
-      const parsed = marketResponseSchema.parse(payload);
-      const match =
-        parsed.markets.find((item) => item.market === params.market) ?? parsed.markets[0];
+      const records = extractMarketRows(payload);
+      const match = records.find((item) => resolveMarketName(item) === params.market) ?? records[0];
       if (match === undefined) {
         throw new Error(`Market not found in Extended response: ${params.market}`);
       }
 
       const snapshot: ExtendedMarketSnapshot = {
-        market: match.market,
+        market: resolveMarketName(match),
         markPrice: toRequiredNumber(match.marketStats.markPrice, "marketStats.markPrice"),
         indexPrice: toRequiredNumber(match.marketStats.indexPrice, "marketStats.indexPrice"),
         fundingRate: toRequiredNumber(match.marketStats.fundingRate, "marketStats.fundingRate"),
@@ -239,7 +272,7 @@ export function createExtendedClient(options: CreateExtendedClientOptions): Exte
       const payload = await requestJson(
         `/info/${encodeURIComponent(params.market)}/funding?startTime=${params.startTimeMs}&endTime=${params.endTimeMs}`,
       );
-      const rows = extractFundingRows(payload);
+      const rows = extractArrayRows(payload);
       const points = rows
         .map(mapFundingRow)
         .filter((point): point is ExtendedFundingPoint => point !== null)
@@ -269,9 +302,9 @@ export function createExtendedClient(options: CreateExtendedClientOptions): Exte
           "X-Api-Key": options.apiKey,
         },
       });
-      const parsed = userFeesSchema.parse(payload);
+      const parsed = extractUserFeesRecord(payload);
       const normalized: ExtendedUserFees = {
-        market: parsed.market,
+        market: resolveFeesMarketName(parsed),
         makerFeeRate: toRequiredNumber(parsed.makerFeeRate, "makerFeeRate"),
         takerFeeRate: toRequiredNumber(parsed.takerFeeRate, "takerFeeRate"),
         builderFeeRate: toNumber(parsed.builderFeeRate),

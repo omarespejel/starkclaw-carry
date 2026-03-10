@@ -44,3 +44,8 @@ export {
   type LeggingGuardInput,
   type LeggingIncidentType,
 } from "./strategy/legging-guard.js";
+export {
+  createStarknetAgenticCarryAdapter,
+  type StarknetAgenticCarryAdapter,
+  type StarknetAgenticToolDefinition,
+} from "./integrations/starknet-agentic/tools.js";

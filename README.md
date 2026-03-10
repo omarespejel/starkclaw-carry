@@ -46,6 +46,21 @@ Production-grade carry bot scaffold for Starknet, built test-first.
   - incident taxonomy (`legging_timeout`, `partial_fill_unhedged`, `venue_error`, etc.)
 - Additional TDD suite for strategy safety-critical flows
 
+## Starknet-Agentic Integration (new)
+
+- Added adapter: [`/Users/espejelomar/StarkNet/starkclaw-carry/src/integrations/starknet-agentic/tools.ts`](/Users/espejelomar/StarkNet/starkclaw-carry/src/integrations/starknet-agentic/tools.ts)
+- Exposes validated tool surface compatible with agent orchestrators:
+  - `starknet_carry_estimate_edge`
+  - `starknet_carry_decide`
+  - `starknet_carry_reconcile_hedge`
+  - `starknet_carry_legging_guard`
+  - `starknet_extended_market_snapshot`
+  - `starknet_extended_funding_history`
+  - `starknet_extended_user_fees`
+- Added runnable demo:
+  - [`/Users/espejelomar/StarkNet/starkclaw-carry/examples/starknet-agentic-carry-demo/run.ts`](/Users/espejelomar/StarkNet/starkclaw-carry/examples/starknet-agentic-carry-demo/run.ts)
+  - `npm run demo:agentic`
+
 ## Stack
 
 - Node.js 22+

@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
+    "demo:agentic": "tsx examples/starknet-agentic-carry-demo/run.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src tests vitest.config.ts",
     "format": "prettier --check .",
